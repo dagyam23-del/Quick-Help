@@ -30,22 +30,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Future<void> _checkAndRecoverSession() async {
     if (!mounted) return;
-    
+
     // On web, try to explicitly get session from URL immediately
     if (kIsWeb) {
       try {
         final supabase = Supabase.instance.client;
         final uri = Uri.base;
-        
+
         if (kDebugMode) {
           debugPrint('ResetPasswordScreen - Checking URL. Path: ${uri.path}, Hash length: ${uri.fragment.length}');
         }
-        
+
         // Try to get session from URL (handles hash fragments)
         await supabase.auth.getSessionFromUrl(uri);
-        
+
         // Give it a moment for the session to be set
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 800));
       } catch (e) {
         // Error recovering session, continue anyway
         if (kDebugMode) {
@@ -56,9 +56,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       // On mobile, wait a moment for session processing
       await Future.delayed(const Duration(milliseconds: 500));
     }
-    
+
     if (!mounted) return;
-    
+
     // Check if we have a current session (might have been recovered)
     final authService = Provider.of<AuthService>(context, listen: false);
     if (authService.currentUser != null) {
@@ -72,7 +72,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       }
       return;
     }
-    
+
     // No session found - but don't show error immediately, user might still be able to use the form
     // The error will show when they try to submit
     if (kDebugMode) {

@@ -140,31 +140,37 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Future<void> _handlePasswordResetCallback() async {
     if (!kIsWeb) return;
 
+    // Wait a bit for Supabase to initialize
+    await Future.delayed(const Duration(milliseconds: 500));
+
     final uri = Uri.base;
     final hash = uri.fragment;
-    
+
     // Check if URL contains password reset token in hash or path
     // Supabase reset links can be: /reset-password#access_token=...&type=recovery
     // OR just the root with hash: #access_token=...&type=recovery
     final isResetPath = uri.path == '/reset-password' || uri.path.endsWith('/reset-password');
-    final hasRecoveryType = hash.contains('type=recovery') || 
+    final hasRecoveryType = hash.contains('type=recovery') ||
                            hash.contains('access_token') ||
-                           uri.queryParameters.containsKey('type') &&
-                           uri.queryParameters['type'] == 'recovery';
-    
+                           (uri.queryParameters.containsKey('type') &&
+                            uri.queryParameters['type'] == 'recovery');
+
     // Debug logging
     if (kDebugMode) {
       debugPrint('Reset callback - Path: ${uri.path}, Hash: $hash, HasRecovery: $hasRecoveryType');
     }
-    
+
     if (isResetPath || hasRecoveryType) {
       // Explicitly get session from URL hash fragment
       try {
         final supabase = Supabase.instance.client;
-        
+
         // Get session from URL (handles hash fragments)
         await supabase.auth.getSessionFromUrl(uri);
-        
+
+        // Add delay to ensure session is set before navigation
+        await Future.delayed(const Duration(milliseconds: 300));
+
         // Navigate to reset password screen immediately
         if (mounted) {
           Navigator.of(context).pushReplacementNamed('/reset-password');
