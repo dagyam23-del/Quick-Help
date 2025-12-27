@@ -13,17 +13,19 @@ class AuthService {
 
   /// Get the current URL for email confirmation redirect (web only)
   /// For mobile, returns null (email confirmation redirect not needed)
+  /// 
+  /// IMPORTANT: Make sure this URL matches your Supabase redirect URL configuration!
+  /// Go to Supabase Dashboard > Authentication > URL Configuration
+  /// and add: https://your-app.vercel.app/reset-password
   String? get _redirectUrl {
     // For web, use the current URL with a reset password route
     // For mobile, returns null (email confirmation redirect not needed)
     if (kIsWeb) {
       // Get the current origin (protocol + host + port)
       final uri = Uri.base;
-      // Use the actual deployment URL (Vercel)
-      // Replace with your actual Vercel URL if different
-      final baseUrl = uri.host.contains('vercel.app') || uri.host.contains('localhost')
-          ? '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}'
-          : 'https://quickhelp-app.vercel.app'; // Your Vercel deployment URL
+      // Use the actual deployment URL
+      // This works for localhost, Vercel, and other deployments
+      final baseUrl = '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
       return '$baseUrl/reset-password';
     }
     return null;
